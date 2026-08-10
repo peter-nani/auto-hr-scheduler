@@ -1,0 +1,33 @@
+services:
+
+  auto-hr-scheduler:
+
+    image: mcuadros/ofelia:0.3
+
+    container_name: auto-hr-scheduler
+
+    restart: unless-stopped
+
+    environment:
+      TZ: Asia/Kolkata
+
+    command:
+      - daemon
+      - --config=/scheduler/ofelia.ini
+
+    volumes:
+
+      # Docker API
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+      # Ofelia configuration
+      - ./scheduler/ofelia.ini:/scheduler/ofelia.ini:ro
+
+      # Active shift state
+      - ./scheduler/state:/scheduler/state
+
+      # Scheduler logs
+      - ./logs/scheduler:/var/log/auto-hr
+
+      # Job runner
+      - ./run_job.sh:/scheduler/run_job.sh:ro
