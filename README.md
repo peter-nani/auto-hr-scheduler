@@ -686,3 +686,30 @@ and:
 ```bash
 ./shift.sh status
 ```
+
+
+docker exec auto-hr-scheduler cat /scheduler/state/active_shift
+docker exec auto-hr-scheduler sh -c 'echo "Active shift: $(cat /scheduler/state/active_shift)"'
+cat scheduler/state/active_shift
+
+activate a shift:
+./shift.sh 1pm
+
+verify status: 
+./shift.sh status
+
+
+get logs 
+
+docker exec auto-hr-scheduler ls -lah /var/log/auto-hr/
+docker exec auto-hr-scheduler cat /var/log/auto-hr/shift-1pm.log
+docker exec auto-hr-scheduler cat /var/log/auto-hr/signin.log
+docker exec auto-hr-scheduler cat /var/log/auto-hr/signout.log
+
+docker exec auto-hr-scheduler grep -E '1pm|ACTIVE_SHIFT' /var/log/auto-hr/signin.log /var/log/auto-hr/signout.log
+
+docker exec auto-hr-scheduler cat /scheduler/state/active_shift
+
+docker exec auto-hr-scheduler cat /var/log/auto-hr/monitor.log
+
+docker exec auto-hr-scheduler cat /var/log/auto-hr/monitor.log
