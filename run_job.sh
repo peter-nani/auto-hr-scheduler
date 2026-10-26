@@ -1,4 +1,3 @@
-```bash
 #!/bin/bash
 
 set -u
@@ -36,7 +35,7 @@ fi
 # ------------------------------------------------------------
 # Determine which shift this job belongs to
 #
-# monitor-support is NOT an HR shift job.
+# monitor-support and tracker reminders are NOT HR shift jobs.
 # ------------------------------------------------------------
 
 case "$JOB_NAME" in
@@ -57,6 +56,10 @@ case "$JOB_NAME" in
         REQUIRED_SHIFT=""
         ;;
 
+    tracker-reminder-*)
+        REQUIRED_SHIFT=""
+        ;;
+
     *)
         log "JOB=$JOB_NAME ACTION=$ACTION RESULT=FAILED REASON=unknown_job"
         exit 1
@@ -65,25 +68,27 @@ case "$JOB_NAME" in
 esac
 
 # ------------------------------------------------------------
-# monitor-support runs independently of HR shift
+# monitor-support and tracker reminders run independently of HR shift
 # ------------------------------------------------------------
 
-if [ "$JOB_NAME" = "monitor-support" ]; then
+case "$JOB_NAME" in
+    monitor-support|tracker-reminder-*)
 
-    log "JOB=$JOB_NAME ACTION=$ACTION RESULT=START INDEPENDENT_JOB=true"
+        log "JOB=$JOB_NAME ACTION=$ACTION RESULT=START INDEPENDENT_JOB=true"
 
-else
+        ;;
+    *)
 
-    # --------------------------------------------------------
-    # HR jobs require an active shift
-    # --------------------------------------------------------
+        # --------------------------------------------------------
+        # HR jobs require an active shift
+        # --------------------------------------------------------
 
-    if [ ! -f "$STATE_FILE" ]; then
+        if [ ! -f "$STATE_FILE" ]; then
 
-        log "JOB=$JOB_NAME ACTION=$ACTION RESULT=SKIPPED REASON=no_active_shift"
-        exit 0
+            log "JOB=$JOB_NAME ACTION=$ACTION RESULT=SKIPPED REASON=no_active_shift"
+            exit 0
 
-    fi
+        fi
 
     ACTIVE_SHIFT="$(cat "$STATE_FILE")"
 
@@ -100,7 +105,8 @@ else
 
     fi
 
-fi
+        ;;
+esac
 
 # ------------------------------------------------------------
 # Determine target container and command
@@ -121,6 +127,11 @@ case "$ACTION" in
     monitor)
         TARGET_CONTAINER="monitor_support"
         COMMAND="python /home/hr306/monitor_support/main.py"
+        ;;
+
+    tracker)
+        TARGET_CONTAINER="tracker-reminder"
+        COMMAND="python /app/tracker_reminder.py"
         ;;
 
     *)
@@ -160,4 +171,3 @@ else
     exit "$EXIT_CODE"
 
 fi
-```
