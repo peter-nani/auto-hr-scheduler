@@ -35,7 +35,7 @@ fi
 # ------------------------------------------------------------
 # Determine which shift this job belongs to
 #
-# monitor-support and tracker reminders are NOT HR shift jobs.
+# All jobs handled here are HR shift jobs.
 # ------------------------------------------------------------
 
 case "$JOB_NAME" in
@@ -52,14 +52,6 @@ case "$JOB_NAME" in
         REQUIRED_SHIFT="6pm"
         ;;
 
-    monitor-support)
-        REQUIRED_SHIFT=""
-        ;;
-
-    tracker-reminder-*)
-        REQUIRED_SHIFT=""
-        ;;
-
     *)
         log "JOB=$JOB_NAME ACTION=$ACTION RESULT=FAILED REASON=unknown_job"
         exit 1
@@ -68,20 +60,11 @@ case "$JOB_NAME" in
 esac
 
 # ------------------------------------------------------------
-# monitor-support and tracker reminders run independently of HR shift
+# HR jobs require an active shift.
 # ------------------------------------------------------------
 
 case "$JOB_NAME" in
-    monitor-support|tracker-reminder-*)
-
-        log "JOB=$JOB_NAME ACTION=$ACTION RESULT=START INDEPENDENT_JOB=true"
-
-        ;;
     *)
-
-        # --------------------------------------------------------
-        # HR jobs require an active shift
-        # --------------------------------------------------------
 
         if [ ! -f "$STATE_FILE" ]; then
 
@@ -122,16 +105,6 @@ case "$ACTION" in
     signout)
         TARGET_CONTAINER="auto-hr"
         COMMAND="python /app/signout.py"
-        ;;
-
-    monitor)
-        TARGET_CONTAINER="monitor_support"
-        COMMAND="python /home/hr306/monitor_support/main.py"
-        ;;
-
-    tracker)
-        TARGET_CONTAINER="tracker-reminder"
-        COMMAND="python /app/tracker_reminder.py"
         ;;
 
     *)

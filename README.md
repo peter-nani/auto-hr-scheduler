@@ -150,11 +150,32 @@ View the last 100 lines:
 docker logs --tail 100 auto-hr-scheduler
 ```
 
-A healthy scheduler should show:
+A healthy main scheduler should show:
 
 ```text
-Starting scheduler with 11 jobs
+Starting scheduler with 13 jobs
 ```
+
+## Tracker Reminder Job
+
+The tracker reminder is an independent Ofelia `job-exec` entry in
+`scheduler/ofelia.ini`. Its settings are:
+
+```ini
+schedule = 0 0 18 * * 1-5
+container = tracker-reminder
+command = python /app/tracker_reminder.py
+```
+
+Ofelia runs the command inside the existing `tracker-reminder` container at
+18:00 IST Monday through Friday. Restart the scheduler after changing the
+configuration:
+
+```bash
+docker restart auto-hr-scheduler
+```
+
+The `tracker-reminder` container must be running when the schedule fires.
 
 ---
 
@@ -325,7 +346,8 @@ Both should return the same value.
 
 # Scheduler Jobs
 
-Ofelia permanently contains 11 jobs.
+Ofelia contains 13 jobs: 11 HR jobs, the independent monitor-support job, and
+the independent tracker reminder job described above.
 
 ## 5 AM Shift
 
@@ -355,11 +377,15 @@ Ofelia permanently contains 11 jobs.
 
 All times are IST.
 
+`monitor-support` runs every 45 minutes inside the existing `monitor_support`
+container, using a direct `job-exec` entry in `scheduler/ofelia.ini`. It does
+not depend on the active HR shift.
+
 ---
 
 # How Shift Selection Works
 
-All 11 jobs remain permanently registered with Ofelia.
+All 13 jobs remain registered with the main Ofelia scheduler.
 
 For example, if:
 
